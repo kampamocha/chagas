@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head
+         content must come *after* these tags -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css" type="text/css">         
+    <link rel="stylesheet" href="./css/ol.css" type="text/css">
+    <link rel="stylesheet" href="./css/gis.css" type="text/css">
+   
+    <title>Sistema</title>
+  </head>
+  <body onload="init()">
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12">
+          <h4>Visualizador de Datos</h4>
+        </div>
+      </div>
+      <div class="row">
+        <div id="map" class="map col-xs-10">
+          <div id="popup"></div>
+        </div>
+        <div class="col-xs-2">
+          <div id="layer-selector" class="row">
+            <label><input type="checkbox" id="check_opossum" checked="checked" value="opossum_layer"> Zarigüeyas</label><br>
+            <label><input type="checkbox" id="check_bug" checked="checked" value="bugs_layer"> Insectos</label><br>
+          </div>
+          <hr>
+          <div id="feature-data" class="row">
+            <p>data 1</p>
+            <p>data 2</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div id="icon-credits" class="col-xs-12"><p>Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></p></div>
+      </div>      
+    </div>
+    <!-- Script section -->    
+    <script src="./js/jquery.min.js" type="text/javascript"></script>
+    <script src="./js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="./js/ol.js" type="text/javascript"></script>
+    <script src="./js/gis.js" type="text/javascript"></script>
+  </body>
+</html>
+
+
