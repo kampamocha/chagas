@@ -10,34 +10,34 @@ window.onload = function() {
 
   //create points and add to source vector
   var opossumFeature = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.26972222, 21.12555556])),
-          name: 'Opossum 1',
-          population: 25,
-          infection_rate: 0.54
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.29051004, 21.09880664])),
+          name: '1',
+          time: '2015/10/21 19:12:05',
+          ele: 10.7
           });
   opossumSource.addFeature(opossumFeature);
 
   var opossumFeature = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.273, 21.127])),
-          name: 'Opossum 2',
-          population: 19,
-          infection_rate: 0.43
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.228468739, 21.08900819])),
+          name: '2',
+          time: '2015/10/21 19:23:34',
+          ele: 10.941
           });
   opossumSource.addFeature(opossumFeature);
 
   var bugFeature = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.266, 21.129])),
-          name: 'Bug 1',
-          population: 18,
-          infant_rate: 0.19
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.28487439, 21.08649203])),
+          name: '3',
+          time: '2015/10/21 19:30:51',
+          ele: 11.181
           });
   bugSource.addFeature(bugFeature);
 
   var bugFeature = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.260, 21.133])),
-          name: 'Bug 2',
-          population: 29,
-          infant_rate: 0.26
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([-89.28489241, 21.08520113])),
+          name: '4',
+          time: '2015/10/21 19:35:15',
+          ele: 12.623
           });
   bugSource.addFeature(bugFeature);
 
