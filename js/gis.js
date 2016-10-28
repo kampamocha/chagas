@@ -66,20 +66,6 @@ window.onload = function() {
     data_layers.push(layer);
   }
 
-  //add the feature vector to the layer vector, and apply a style to whole layer
-  // var opossumLayer = new ol.layer.Vector({
-  //   source: opossumSource,
-  //   style: opossumStyle,
-  //   visible: document.getElementById('check_opossum').checked
-  // });
-
-  // var bugLayer = new ol.layer.Vector({
-  //   source: bugSource,
-  //   style: bugStyle,
-  //   visible: document.getElementById('check_bug').checked
-  // });
-
-
   //draw the map
   var map = new ol.Map({
     target: 'map',
@@ -117,7 +103,7 @@ window.onload = function() {
   });
   map.addOverlay(popup);
 
-  // display popup on click
+  // display popup on click and feature data
   map.on('click', function(evt) {
     var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
         return feature;
@@ -151,6 +137,7 @@ window.onload = function() {
     } else {
       $(element).popover('destroy');
       //popup.setPosition(undefined);
+      $('#feature-data').html('');
     }
   });
 };
