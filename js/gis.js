@@ -3,9 +3,12 @@ window.onload = function() {
   //path and filenames
   var path = './data/';
 
-  var files = ['2016-01.geojson',
-              '2016-05.geojson',
-              '2016-08.geojson'];
+  // var files = ['2016-01.geojson',
+  //             '2016-05.geojson',
+  //             '2016-08.geojson',
+  //             'Opossum.geojson'];
+
+  var files = ['Opossum.geojson'];
 
   //map options
   var view_options = {
@@ -114,8 +117,9 @@ window.onload = function() {
     if (feature) {
       popup.setPosition(evt.coordinate);
 
-      var content = '<strong>ID: ' + feature.get('name') + '</strong>';
-      content += ' ' + feature.get('cmt');
+      var content = '<strong>' + feature.get('Cve_Casa') + '</strong>';
+      content += ' ' + feature.get('Fecha') + '<br>';
+      content += 'GPS: ' + feature.get('Punto_GPS');
 
       $(element).attr('data-placement', 'top');
       $(element).attr('data-html', true);
@@ -127,10 +131,18 @@ window.onload = function() {
       var coord = feature.getGeometry().getCoordinates();
       coord = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
 
-      var data = '<strong>ID: </strong>' + feature.get('name') + '<br>';
-      data += '<strong>Fecha: </strong>' + feature.get('cmt') + '<br>';
+      var data = '<strong>ID: </strong>' + feature.get('Cve_Casa') + '<br>';
+      data += '<strong>Fecha: </strong>' + feature.get('Fecha') + '<br>';
+      data += '<strong>Localidad: </strong>' + feature.get('Localidad') + '<br>';
+      data += '<strong>Punto GPS: </strong>' + feature.get('Punto_GPS') + '<br>';
       data += '<strong>Lon: </strong>' + coord[0].toFixed(8) + '<br>';
       data += '<strong>Lat: </strong>' + coord[1].toFixed(8) + '<br>';
+      data += '<strong>LT (mm): </strong>' + feature.get('LT_mm') + '<br>';
+      data += '<strong>LC (mm): </strong>' + feature.get('LC_mm') + '<br>';
+      data += '<strong>Edad: </strong>' + feature.get('Edad') + '<br>';
+      data += '<strong>Sexo: </strong>' + feature.get('Sexo') + '<br>';
+      data += '<strong>Edo_Reprod: </strong>' + feature.get('Edo_Reprod') + '<br>';
+      data += '<strong>Dx_T_cruzi: </strong>' + feature.get('Dx_T_cruzi') + '<br>';
 
       $('#feature-data').html(data);
 
@@ -140,4 +152,28 @@ window.onload = function() {
       $('#feature-data').html('');
     }
   });
+
+  // Select features
+  $('#select-localidad').change(function () {
+    var localidad = $(this).val();
+    var source = data_layers[0].getSource();
+    var features = source.getFeatures();
+    var empty_style = new ol.style.Style({ image: '' });
+
+    if (localidad == 'Todas') {
+      for (var i = 0; i < features.length; i++) {
+        features[i].setStyle(null);
+      }
+    } else {
+      for (var i = 0; i < features.length; i++) {
+        var feature = features[i];
+        if (feature.get('Localidad') == localidad) {
+          feature.setStyle(null);
+        } else {
+          feature.setStyle(empty_style);
+        }
+      }
+    }    
+  });
+
 };
