@@ -1,9 +1,13 @@
 .map {
-height: 600px;
-width: 80%;
+	height: 90vh;
+	width: 80%;
 }
 #icon-credits p {
-font-size: 10px;
-text-align: left;
-display: none;
+	font-size: 10px;
+	text-align: left;
+	/*display: none;*/
+}
+.popover {
+    width: 110px;
+    height: 85px;
 }

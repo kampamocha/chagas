@@ -1,5 +1,62 @@
 window.onload = function() {
 
+  //Helper function
+  var updateStyles = function(features, localidad) {
+    // Get new center
+    new_center = ol.proj.fromLonLat([-89.43944444, 20.91916667]);
+    new_zoom = 10;
+    for(var i = 0, towns_number = towns.length; i < towns_number; i++)
+    {
+      if(towns[i].name == localidad)
+      {
+        new_center = towns[i].center;
+        new_zoom = 14.5;
+        break;
+      }
+    }
+
+    var view_options = {
+                          center: new_center, //Ticopó
+                          extent: ol.proj.transformExtent([-91.9, 19.2, -86.3, 22.0],"EPSG:4326", "EPSG:3857"),
+                          zoom: new_zoom = new_zoom,
+                          minZoom: 8
+                        };
+
+    map.setView(new ol.View(view_options));
+
+    var empty_style = new ol.style.Style({ image: '' });
+    var opossumRedStyle = new ol.style.Style({
+      image: new ol.style.Icon({
+        opacity: 0.75,
+        size: [594, 594],
+        scale: 15/594,
+        src: './img/icons/opossum-red.svg'
+      })
+    });
+    var opossumGreenStyle = new ol.style.Style({
+      image: new ol.style.Icon({
+        opacity: 0.75,
+        size: [594, 594],
+        scale: 15/594,
+        src: './img/icons/opossum-green.svg'
+      })
+    });
+
+    for (var i = 0, featuresNumber = features.length; i < featuresNumber; i++) {
+      var feature = features[i];
+
+      if (localidad == 'Todas' || feature.get('Localidad') == localidad) {
+        if (feature.get('Captura')) {
+          feature.setStyle( feature.get('Dx_T_cruzi') == 'Positivo' ? opossumRedStyle : opossumGreenStyle);
+        } else {
+          feature.setStyle(null);
+        }
+      } else {
+        feature.setStyle(empty_style);
+      }
+    }
+  };
+
   //path and filenames
   var path = './data/';
 
@@ -9,6 +66,21 @@ window.onload = function() {
   //             'Opossum.geojson'];
 
   var files = ['Opossum.geojson'];
+
+  //Towns
+  var towns = [ { id: '310070001', name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]) },
+                { id: '310200001', name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]) },
+                { id: '310360001', name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]) },
+                { id: '310450001', name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]) },
+                { id: '310500093', name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]) },
+                { id: '310510001', name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]) },
+                { id: '310520001', name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]) },
+                { id: '310670001', name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]) },
+                { id: '310680001', name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]) },
+                { id: '310870001', name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]) },
+                { id: '310900001', name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]) },
+                { id: '310930001', name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]) },
+              ];
 
   //map options
   var view_options = {
@@ -158,22 +230,19 @@ window.onload = function() {
     var localidad = $(this).val();
     var source = data_layers[0].getSource();
     var features = source.getFeatures();
-    var empty_style = new ol.style.Style({ image: '' });
 
-    if (localidad == 'Todas') {
-      for (var i = 0; i < features.length; i++) {
-        features[i].setStyle(null);
-      }
-    } else {
-      for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        if (feature.get('Localidad') == localidad) {
-          feature.setStyle(null);
-        } else {
-          feature.setStyle(empty_style);
-        }
-      }
-    }    
+    updateStyles(features, localidad);
+
   });
 
+  //update styles
+  var tmp_source = data_layers[0].getSource();
+  var tmp_features = tmp_source.getFeatures();
+  updateStyles(tmp_features, 'Todas');
+
+
 };
+
+
+
+
