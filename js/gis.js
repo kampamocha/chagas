@@ -1,5 +1,8 @@
 window.onload = function() {
 
+////////////////////////////////////////////////////////////////
+// HELPER FUNCTIONS
+////////////////////////////////////////////////////////////////
   //Helper function
   var updateStyles = function(features, localidad) {
     // Get new center
@@ -57,6 +60,10 @@ window.onload = function() {
     }
   };
 
+////////////////////////////////////////////////////////////////
+// EXECUTION
+////////////////////////////////////////////////////////////////
+
   //path and filenames
   var path = './data/';
 
@@ -65,7 +72,47 @@ window.onload = function() {
   //             '2016-08.geojson',
   //             'Opossum.geojson'];
 
-  var files = ['Opossum.geojson'];
+  //var files = ['Opossum.geojson'];
+  var files = ['Infected.geojson',
+               'NonInfected.geojson',
+               'EmptyTrap.geojson'];
+
+  //Styles
+
+  var empty_style = new ol.style.Style({ image: '' });
+  var infected_style = new ol.style.Style({
+    image: new ol.style.Icon({
+      opacity: 0.75,
+      size: [594, 594],
+      scale: 15/594,
+      src: './img/icons/opossum-red.svg'
+    })
+  });
+  var non_infected_style = new ol.style.Style({
+    image: new ol.style.Icon({
+      opacity: 0.75,
+      size: [594, 594],
+      scale: 15/594,
+      src: './img/icons/opossum-green.svg'
+    })
+  });               
+  var circle_style = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        width: 0.7,
+        //color: '#A8E2ED'
+        color: 'blue'
+      })//,
+      // fill: new ol.style.Fill({
+      //   color: 'hsl(220,60%,60%)'
+      // })
+    })
+  });
+
+  var styles = [infected_style,
+                non_infected_style,
+                circle_style];
 
   //Towns
   var towns = [ { id: '310070001', name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]) },
@@ -94,7 +141,9 @@ window.onload = function() {
 
   //create Base Layer
   var baseLayer = new ol.layer.Tile({
-        source: new ol.source.OSM()
+        source: new ol.source.OSM({
+          "url": "http://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+        })
   });
 
   //create Data layers
@@ -134,9 +183,9 @@ window.onload = function() {
     //layers
     var layer = new ol.layer.Vector({
                   source: source,
-                  //style: style,
+                  style: styles[i],
                   visible: !i   //only the first layer is visible
-                });
+                });      
     
     data_layers.push(layer);
   }
