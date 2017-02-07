@@ -19,7 +19,7 @@ window.onload = function() {
     }
 
     var view_options = {
-                          center: new_center, //Ticopó
+                          center: new_center,
                           extent: ol.proj.transformExtent([-91.9, 19.2, -86.3, 22.0],"EPSG:4326", "EPSG:3857"),
                           zoom: new_zoom = new_zoom,
                           minZoom: 8
@@ -102,10 +102,10 @@ window.onload = function() {
       stroke: new ol.style.Stroke({
         width: 0.7,
         //color: '#A8E2ED'
-        color: 'blue'
+        color: '#115CD6'
       })//,
-      // fill: new ol.style.Fill({
-      //   color: 'hsl(220,60%,60%)'
+      //  fill: new ol.style.Fill({
+      //    color: 'hsl(220,60%,60%)'
       // })
     })
   });
@@ -160,31 +160,12 @@ window.onload = function() {
                                 })
                   });
     
-    //styles
-    // var style = new ol.style.Style ({
-    //   fill: new ol.style.Fill({
-    //           color: [250, 250, 250, 1]
-    //         }),
-    //   stroke: new ol.style.Stroke({
-    //             color: [220,220,220,1],
-    //             width: 1
-    //           })
-    // });
-
-    // var opossumStyle = new ol.style.Style({
-    //   image: new ol.style.Icon({
-    //     opacity: 0.75,
-    //     size: [594, 594],
-    //     scale: 10/594,
-    //     src: './img/icons/opossum-mammal-animal-silhouette.svg'
-    //   })
-    // });
-
     //layers
     var layer = new ol.layer.Vector({
                   source: source,
                   style: styles[i],
-                  visible: !i   //only the first layer is visible
+                  visible: true
+                  //visible: !i   //only the first layer is visible
                 });      
     
     data_layers.push(layer);
@@ -277,17 +258,19 @@ window.onload = function() {
   // Select features
   $('#select-localidad').change(function () {
     var localidad = $(this).val();
-    var source = data_layers[0].getSource();
-    var features = source.getFeatures();
 
-    updateStyles(features, localidad);
+    for(var i = 0, n = data_layers.length; i < n; i++) {
+      var source = data_layers[i].getSource();
+      var features = source.getFeatures();
+      updateStyles(features, localidad);
+    }
 
   });
 
   //update styles
-  var tmp_source = data_layers[0].getSource();
-  var tmp_features = tmp_source.getFeatures();
-  updateStyles(tmp_features, 'Todas');
+  // var tmp_source = data_layers[0].getSource();
+  // var tmp_features = tmp_source.getFeatures();
+  // updateStyles(tmp_features, 'Todas');
 
 
 };
