@@ -175,6 +175,11 @@ window.onload = function() {
   var map = new ol.Map({
     target: 'map',
     layers: [ baseLayer ].concat(data_layers),
+    controls: ol.control.defaults({
+          zoom: true,
+          attribution: true,
+          rotate: true
+        }),
     view: new ol.View(view_options)
   });
 
