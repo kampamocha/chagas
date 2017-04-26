@@ -5,21 +5,9 @@ window.onload = function() {
 ////////////////////////////////////////////////////////////////
   //Helper function
   var updateStyles = function(features, local_key) {
-    // Get new center
-    //var new_center = ol.proj.fromLonLat([-89.43944444, 20.91916667]);
-    //var old_center = new_center;
     var localidad = towns[local_key].name;
     var new_center = towns[local_key].center;
     var new_zoom = towns[local_key].zoom;
-    // for(var i = 0, towns_number = towns.length; i < towns_number; i++)
-    // {
-    //   if(towns[i].name == localidad)
-    //   {
-    //     new_center = towns[i].center;
-    //     new_zoom = 14.5;
-    //     break;
-    //   }
-    // }
 
     var view_options = {
                           center: new_center,
@@ -29,16 +17,6 @@ window.onload = function() {
                         };
 
     map.setView(new ol.View(view_options));
-
-    var wgs84Sphere= new ol.Sphere(6378137);
-    var c1 = ol.proj.transform(new_center, 'EPSG:3857', 'EPSG:4326');
-    //var c2 = ol.proj.transform(old_center, 'EPSG:3857', 'EPSG:4326');
-    console.log(c1);
-    //console.log(wgs84Sphere.haversineDistance(c1, c2));
-    console.log(wgs84Sphere.offset(c1, 2500, 0));
-    console.log(wgs84Sphere.offset(c1, -2500, 0));
-    console.log(wgs84Sphere.offset(c1, 2500, Math.PI / 2));
-    console.log(wgs84Sphere.offset(c1, -2500, Math.PI / 2));
 
     var empty_style = new ol.style.Style({ image: '' });
     var opossumRedStyle = new ol.style.Style({
@@ -74,14 +52,24 @@ window.onload = function() {
   };
 
 //Filter features
-  var calcCorners = function(localidad) {
+  var calcCorners = function(local_key) {
     // var corners = {};
     // for(var i = 1, n = data_layers.length; i < n; i++) {
     //   var source = data_layers[i].getSource();
     //   var features = source.getFeatures();
-      
+    var center = towns[local_key].center;
     // }
-    
+    var wgs84Sphere= new ol.Sphere(6378137);
+    var c1 = ol.proj.transform(center, 'EPSG:3857', 'EPSG:4326');
+    //var c2 = ol.proj.transform(old_center, 'EPSG:3857', 'EPSG:4326');
+    console.log(c1);
+    //console.log(wgs84Sphere.haversineDistance(c1, c2));
+    var max_lat = wgs84Sphere.offset(c1, 2500, 0);
+    var min_lat = wgs84Sphere.offset(c1, -2500, 0);
+    var max_lon = wgs84Sphere.offset(c1, 2500, Math.PI / 2);
+    var min_lon = wgs84Sphere.offset(c1, -2500, Math.PI / 2);    
+
+    return max_lat;
   }
   
 
@@ -132,51 +120,20 @@ window.onload = function() {
                 non_infected_style,
                 circle_style];
 
-  //Towns
-  // var towns = [ { id: '310070001', name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]) },
-  //               { id: '310200001', name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]) },
-  //               { id: '310360001', name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]) },
-  //               { id: '310450001', name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]) },
-  //               { id: '310500093', name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]) },
-  //               { id: '310510001', name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]) },
-  //               { id: '310520001', name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]) },
-  //               { id: '310670001', name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]) },
-  //               { id: '310680001', name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]) },
-  //               { id: '310870001', name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]) },
-  //               { id: '310900001', name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]) },
-  //               { id: '310930001', name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]) }
-  //             ];
-
-  // var towns = new Map([
-  //                       ['0',         { name: 'Todas', center: ol.proj.fromLonLat([-89.43944444, 20.91916667]), zoom: 10 }],
-  //                       ['310070001', { name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]), zoom: 14.5 }],
-  //                       ['310200001', { name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]), zoom: 14.5 }],
-  //                       ['310360001', { name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]), zoom: 14.5 }],
-  //                       ['310450001', { name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]), zoom: 14.5 }],
-  //                       ['310500093', { name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]), zoom: 14.5 }],
-  //                       ['310510001', { name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]), zoom: 14.5 }],
-  //                       ['310520001', { name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]), zoom: 14.5 }],
-  //                       ['310670001', { name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]), zoom: 14.5 }],
-  //                       ['310680001', { name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]), zoom: 14.5 }],
-  //                       ['310870001', { name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]), zoom: 14.5 }],
-  //                       ['310900001', { name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]), zoom: 14.5 }],
-  //                       ['310930001', { name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]), zoom: 14.5 }]
-  //                     ]);
-
   var towns = {
     '0':         { name: 'Todas', center: ol.proj.fromLonLat([-89.43944444, 20.91916667]), zoom: 10 },
-    '310070001': { name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]), zoom: 14.5 },
-    '310200001': { name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]), zoom: 14.5 },
-    '310360001': { name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]), zoom: 14.5 },
-    '310450001': { name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]), zoom: 14.5 },
-    '310500093': { name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]), zoom: 14.5 },
-    '310510001': { name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]), zoom: 14.5 },
-    '310520001': { name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]), zoom: 14.5 },
-    '310670001': { name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]), zoom: 14.5 },
-    '310680001': { name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]), zoom: 14.5 },
-    '310870001': { name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]), zoom: 14.5 },
-    '310900001': { name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]), zoom: 14.5 },
-    '310930001': { name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]), zoom: 14.5 }
+    '310070001': { name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]), zoom: 15 },
+    '310200001': { name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]), zoom: 15 },
+    '310360001': { name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]), zoom: 15 },
+    '310450001': { name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]), zoom: 15 },
+    '310500093': { name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]), zoom: 15 },
+    '310510001': { name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]), zoom: 15 },
+    '310520001': { name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]), zoom: 14 },
+    '310670001': { name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]), zoom: 15 },
+    '310680001': { name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]), zoom: 15 },
+    '310870001': { name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]), zoom: 15 },
+    '310900001': { name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]), zoom: 15 },
+    '310930001': { name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]), zoom: 15 }
   };
 
   //map options
