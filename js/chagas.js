@@ -51,7 +51,7 @@ window.onload = function() {
     }
   };
 
-//Filter features
+//Calcula esquinas
   var calcCorners = function(local_key) {
     // var corners = {};
     // for(var i = 1, n = data_layers.length; i < n; i++) {
@@ -64,11 +64,13 @@ window.onload = function() {
     //var c2 = ol.proj.transform(old_center, 'EPSG:3857', 'EPSG:4326');
     //console.log(c1);
     //console.log(wgs84Sphere.haversineDistance(c1, c2));
+    var distance = towns[local_key].distance;
+
     var corners = {
-      up: wgs84Sphere.offset(c1, 2500, 0)[1],
-      down: wgs84Sphere.offset(c1, -2500, 0)[1],
-      right: wgs84Sphere.offset(c1, 2500, Math.PI / 2)[0],
-      left: wgs84Sphere.offset(c1, -2500, Math.PI / 2)[0]
+      up: wgs84Sphere.offset(c1, distance, 0)[1],
+      down: wgs84Sphere.offset(c1, -distance, 0)[1],
+      right: wgs84Sphere.offset(c1, distance, Math.PI / 2)[0],
+      left: wgs84Sphere.offset(c1, -distance, Math.PI / 2)[0]
     }
 
     // var max_lat = wgs84Sphere.offset(c1, 2500, 0);
@@ -79,6 +81,23 @@ window.onload = function() {
     return corners;
   }
   
+// Make a square polygon
+  var makeRegion = function(corners) {
+    var ring = [
+      [corners.left, corners.up],
+      [corners.right, corners.up],
+      [corners.right, corners.down],
+      [corners.left, corners.down],
+      [corners.left, corners.up]
+    ];
+
+    var polygon = new ol.geom.Polygon([ring]);
+
+    polygon.transform('EPSG:4326', 'EPSG:3857');
+
+    return polygon;
+  }
+
 
 ////////////////////////////////////////////////////////////////
 // EXECUTION
@@ -129,18 +148,18 @@ window.onload = function() {
 
   var towns = {
     '0':         { name: 'Todas', center: ol.proj.fromLonLat([-89.43944444, 20.91916667]), zoom: 10, infected: 160, non_infected: 166, empty: 874 },
-    '310070001': { name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]), zoom: 15, infected: 13, non_infected: 30, empty: 57 },
-    '310200001': { name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]), zoom: 15, infected: 20, non_infected: 9, empty: 71 },
-    '310360001': { name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]), zoom: 15, infected: 5, non_infected: 8, empty: 87 },
-    '310450001': { name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]), zoom: 15, infected: 14, non_infected: 15, empty: 71 },
-    '310500093': { name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]), zoom: 15, infected: 16, non_infected: 20, empty: 64 },
-    '310510001': { name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]), zoom: 15, infected: 7, non_infected: 1, empty: 92 },
-    '310520001': { name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]), zoom: 14, infected: 11, non_infected: 20, empty: 69 },
-    '310670001': { name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]), zoom: 15, infected: 13, non_infected: 19, empty: 68 },
-    '310680001': { name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]), zoom: 15, infected: 21, non_infected: 12, empty: 67 },
-    '310870001': { name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]), zoom: 15, infected: 15, non_infected: 16, empty: 69 },
-    '310900001': { name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]), zoom: 15, infected: 12, non_infected: 5, empty: 83 },
-    '310930001': { name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]), zoom: 15, infected: 13, non_infected: 11, empty: 76 }
+    '310070001': { name: 'Cacalchén', center: ol.proj.fromLonLat([-89.22818000, 20.9830986111]), zoom: 15, distance: 1300, infected: 13, non_infected: 30, empty: 57 },
+    '310200001': { name: 'Chicxulub Pueblo', center: ol.proj.fromLonLat([-89.5150761111, 21.1372894444]), zoom: 15, distance: 800, infected: 20, non_infected: 9, empty: 71 },
+    '310360001': { name: 'Homún', center: ol.proj.fromLonLat([-89.2856605556, 20.7394877778]), zoom: 15, distance: 1500, infected: 5, non_infected: 8, empty: 87 },
+    '310450001': { name: 'Kopomá', center: ol.proj.fromLonLat([-89.8995258333, 20.64897]), zoom: 15, distance: 800, infected: 14, non_infected: 15, empty: 71 },
+    '310500093': { name: 'Komchén', center: ol.proj.fromLonLat([-89.6616605556, 21.1034636111]), zoom: 15, distance: 1100, infected: 16, non_infected: 20, empty: 64 },
+    '310510001': { name: 'Mocochá', center: ol.proj.fromLonLat([-89.4520555556, 21.1056844444]), zoom: 15, distance: 800, infected: 7, non_infected: 1, empty: 92 },
+    '310520001': { name: 'Motul', center: ol.proj.fromLonLat([-89.2839247222, 21.0955505556]), zoom: 14, distance: 1700, infected: 11, non_infected: 20, empty: 69 },
+    '310670001': { name: 'Seyé', center: ol.proj.fromLonLat([-89.3722527778, 20.8369866667]), zoom: 15, distance: 1300, infected: 13, non_infected: 19, empty: 68 },
+    '310680001': { name: 'Sinanché', center: ol.proj.fromLonLat([-89.1857833333, 21.225595]), zoom: 15, distance: 900, infected: 21, non_infected: 12, empty: 67 },
+    '310870001': { name: 'Tetiz', center: ol.proj.fromLonLat([-89.9334488889, 20.9619116667]), zoom: 15, distance: 1000, infected: 15, non_infected: 16, empty: 69 },
+    '310900001': { name: 'Timucuy', center: ol.proj.fromLonLat([-89.513505, 20.8105080556]), zoom: 15, distance: 1000, infected: 12, non_infected: 5, empty: 83 },
+    '310930001': { name: 'Tixkokob', center: ol.proj.fromLonLat([-89.3949655556, 21.0025677778]), zoom: 15, distance: 1400, infected: 13, non_infected: 11, empty: 76 }
   };
 
   //map options
@@ -313,7 +332,32 @@ window.onload = function() {
   // Calculate statistic
   $('#calc-btn').click(function () {
     var corners = calcCorners($('#select-localidad').val());
+    var polygon = makeRegion(corners);
+    var feature = new ol.Feature(polygon);
+    var vectorSource = new ol.source.Vector();
+    vectorSource.addFeature(feature);
+    var vectorLayer = new ol.layer.Vector({
+      source: vectorSource
+    });
+    map.addLayer(vectorLayer);
+
     console.log(corners);
+    var resolution = $('#select-resolution').val() * 10;
+    var dx = (corners.left - corners.right) / resolution;
+    var dy = (corners.up - corners.down) / resolution;
+
+    x = corners.left;
+    y = corners.up;
+    for(i = 0; i <= resolution; i++) {
+      x = corners.left - i * dx;
+      for(j = 0; j <= resolution; j++) {
+        y = corners.up - j * dy;
+        console.log("**");
+        console.log(x);
+        console.log(y);
+      }
+    }
+
   });
   //update styles
   // var tmp_source = data_layers[0].getSource();
