@@ -51,17 +51,18 @@
           <hr>
 
           <div>
-            <label>Resolución</label>
+            <!--label>Resolución</label>
             <select id="select-resolution" class="custom-select">
               <option value="1" selected>1</option>
               <option value="2">2</option>
               <option value="3">3</option>
               <option value="4">4</option>
               <option value="5">5</option>
-            </select>
+            </select!-->
 
-            <label>Distancia (km)</label>
-            <input id="distance-number" type="number" step="0.5" min="0.5" max="5", value="1">
+            <label>Distancia (m)</label>
+            <input id="distance-number" type="number" step="10" min="10" max="500", value="100">
+            <p id="moranI"></p>
 
             <button id="calc-btn" type="button" class="btn btn-primary" disabled>Calcular</button>
           </div>
