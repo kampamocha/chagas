@@ -98,8 +98,8 @@ window.onload = function() {
   //   return polygon;
   // };
 
-// Calculate Moran's I global statistic
-  var calcMoranI = function(local_key, distance) {
+// Calculate global statistics
+  var calcStats = function(local_key, distance) {
     var localidad = towns[local_key].name;
     var features = getTownFeatures(localidad);
     var N = features.length;
@@ -108,6 +108,7 @@ window.onload = function() {
     var empty = 0;
     var x = [];
 
+    // Get values for variable of interest
     for (var i = 0; i < N; i++) {
       var feature = features[i];
       var captura = feature.get('Captura');
@@ -127,31 +128,34 @@ window.onload = function() {
 
     var m = infected / N;
     var w = calcWeightMatrix(features, distance);
+    // W is the same for both considering that w[i][i] = 0;
     var W = 0;
     for (i = 0; i < N; i++) {
       for (j = 0; j < N; j++) {
-        W = W + w[i][j];
+        W += w[i][j];
       }
     }
 
-    var num = 0;
+    var numI = 0;
+    var numG = 0;
+    var denI = 0;
+    var denG = 0;
     for (i = 0; i < N; i++) {
+      denI += (x[i] - m) * (x[i] - m);
       for (j = 0; j < N; j++) {
-        num += w[i][j] * (x[i] - m) * (x[j] - m);
+        numI += w[i][j] * (x[i] - m) * (x[j] - m);
+        numG += w[i][j] * x[i] * x[j];
+        if (i != j) denG += x[i] * x[j];
       }
     }    
 
-    var den = 0;
-    for (i = 0; i < N; i++) {
-      den += (x[i] - m) * (x[i] - m);
-
-    }
-
-    // I statistic
-    var stat = N / W * num / den;
-    // Expected value
-    var E = -1 / (N-1);
-    // Variance
+    // Statistic
+    var I = N / W * numI / denI;
+    var G = numG / denG;
+    // Expected values
+    var E_I = -1 / (N-1);
+    var E_G = W / (N*(N-1));
+    // I Variance
     var S1 = 0;
     for (var i = 0; i < N; i++) {
       for (var j = 0; j < N; j++) {
@@ -184,14 +188,100 @@ window.onload = function() {
 
     var S5 = (N*N - N)*S1 - 2*N*S2 + 6*W*W;
 
-    var Var = (N*S4 - S3*S5) / ((N-1)*(N-2)*(N-3)*W*W) - E*E;
-    // Z score
-    var Z = (stat - E) / Math.sqrt(Var);
+    var Var_I = (N*S4 - S3*S5) / ((N-1)*(N-2)*(N-3)*W*W) - E_I*E_I;
+
+    // G Variance
+    var m1 = 0;
+    var m2 = 0;
+    var m3 = 0;
+    var m4 = 0;
+    for (var i = 0; i < N; i++) {
+      m1 += x[i];
+      m2 += Math.pow(x[i], 2);
+      m3 += Math.pow(x[i], 3);
+      m4 += Math.pow(x[i], 4);
+    }
+    var n4 = N;
+    for (var k = N-1; k > N-4; k--) {
+      n4 *= k;
+    }
+    var S1 = 0;
+    for (var i = 0; i < N; i++) {
+      for (var j = 0; j < N; j++) {
+        if (i != j) {
+          S1 += Math.pow(w[i][j] + w[j][i], 2);
+        }
+      }
+    }
+    S1 = S1 / 2;
+    var S2 = 0
+    for (var i = 0; i < N; i++) {
+      var S2i = 0;
+      for (var j = 0; j < N; j++) {
+        if (i != j) {
+          S2i += w[i][j] + w[j][i];
+        }
+      }
+      S2 += (S2i * S2i);
+    }
+    var B0 = (N*N - 3*N + 3)*S1 - N*S2 + 3*W*W;
+    var B1 = -((N*N - N)*S1 - 2*N*S2 + 3*W*W);
+    var B2 = -(2*N*S1 - (N+3)*S2 + 6*W*W);
+    var B3 = 4*(N-1)*S1 - 2*(N+1)*S2 + 8*W*W;
+    var B4 = S1 - S2 + W*W;
+
+    var EG2 = (B0*m2*m2 + B1*m4 + B2*m1*m1*m2 + B3*m1*m3 + B4*m1*m1*m1*m1) / (Math.pow(m1*m1 - m2, 2)*n4)
+     
+    var Var_G = EG2 - E_G*E_G;
+
+    // Z scores
+    var Z_I = (I - E_I) / Math.sqrt(Var_I);
+    var Z_G = (G - E_G) / Math.sqrt(Var_G);
 
     // p value
-    var p = 1 - GetZPercent(Z);
+    var p_I = 1 - GetZPercent(Z_I);
+    var p_G = 1 - GetZPercent(Z_G);
 
-    return { stat: stat, E: E, Var: Var, Z: Z, p: p };
+    // Local Statistics
+    var Gi = [];
+    var p_Gi = [];
+    var Sx = 0;
+    var Sx2 = 0;
+    for (var i = 0; i < N; i++) {
+      Sx += x[i];
+      Sx2 += x[i]*x[i];
+    }
+    for (var i = 0; i < N; i++) {
+      var Swx = 0;
+      var Wi = 0;
+      for (var j = 0; j < N; j++) {
+        if (i != j) {
+          Swx += w[i][j] * x[j];
+          Wi += w[i][j];
+        }
+      }
+      var Gi = Swx / (Sx - x[i]);
+      var EGi = Wi / (N-1);
+      var Yi1 = (Sx - x[i]) / (N-1);
+      var Yi2 = (Sx2 - x[i]*x[i]) / (N-1) - Yi1*Yi1;
+      var VarGi = (Wi * (N-1-Wi) * Yi2) / ((N-1) * (N-1) * (N-2) * Yi1 * Yi1);
+      var ZGi = (Gi - EGi) / Math.sqrt(VarGi);
+      var p_Gi = 1 - GetZPercent(ZGi);
+
+      Gi[i] = Gi;
+      p_Gi[i] = p_Gi;
+
+      console.log(i);
+      console.log(Gi);
+      console.log(EGi);
+      console.log(VarGi);
+      console.log(ZGi);
+      console.log(p_Gi);
+    }
+
+    return { I: I, E_I: E_I, Var_I: Var_I, Z_I: Z_I, p_I: p_I,
+             G: G, E_G: E_G, Var_G: Var_G, Z_G: Z_G, p_G: p_G,
+             Gi: Gi };
   };
 
 // Get features from town
@@ -504,7 +594,7 @@ window.onload = function() {
   $('#select-localidad').change(function () {
     var local_key = $(this).val();
     // clean stats
-    $('#moranI').html('');
+    $('#stats').html('');
 
     for(var i = 0, n = data_layers.length; i < n; i++) {
       var source = data_layers[i].getSource();
@@ -525,14 +615,18 @@ window.onload = function() {
   $('#calc-btn').click(function () {
     var local_key = $('#select-localidad').val();
     var distance = $('#distance-number').val();
-    var I = calcMoranI(local_key, distance);
+    var S = calcStats(local_key, distance);
 
-    var data = '<strong>I: </strong>' + myRound(I.stat, 4) + '<br>';
-    data += '<strong>E(I): </strong>' + myRound(I.E, 4) + '<br>';
-    data += '<strong>Var(I): </strong>' + myRound(I.Var, 4) + '<br>';
-    data += '<strong>Z(I): </strong>' + myRound(I.Z, 4) + '<br>';
-    data += '<strong>p: </strong>' + myRound(I.p, 4) + '<br>'; 
-    $('#moranI').html(data);
+    // var data = '<strong>I: </strong>' + myRound(S.I, 4) + ', <strong>G: </strong>' + myRound(S.G, 4) + '<br>';
+    // data += '<strong>E(I): </strong>' + myRound(S.E_I, 4) + ', <strong>E(G): </strong>' + myRound(S.E_G, 4) + '<br>';
+    // data += '<strong>V(I): </strong>' + myRound(S.Var_I, 4) + ', <strong>V(G): </strong>' + myRound(S.Var_G, 4) + '<br>';
+    // data += '<strong>Z(I): </strong>' + myRound(S.Z_I, 4) + ', <strong>Z(G): </strong>' + myRound(S.Z_G, 4) + '<br>';
+    // data += '<strong>p(I): </strong>' + myRound(S.p_I, 4) + ', <strong>p(G): </strong>' + myRound(S.p_G, 4) + '<br>'; 
+
+    var data = '<strong>I: </strong>' + myRound(S.I, 4) + ', <strong>p: </strong>' + myRound(S.p_I, 4) + '<br>';
+    data += '<strong>G: </strong>' + myRound(S.G, 4) + ', <strong>p: </strong>' + myRound(S.p_G, 4) + '<br>';
+
+    $('#stats').html(data);
   });
   
   //// Calculate with regions
