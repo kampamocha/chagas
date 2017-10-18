@@ -1,5 +1,6 @@
 window.onload = function() {
 
+  const ALPHA = 0.05;
 ////////////////////////////////////////////////////////////////
 // HELPER FUNCTIONS
 ////////////////////////////////////////////////////////////////
@@ -35,6 +36,10 @@ window.onload = function() {
         src: './img/icons/opossum-green.svg'
       })
     });
+
+// BORRAME
+// var opossumRedStyle = new ol.style.Style({ image: '' });
+// var opossumGreenStyle = new ol.style.Style({ image: '' });
 
     for (var i = 0, featuresNumber = features.length; i < featuresNumber; i++) {
       var feature = features[i];
@@ -100,6 +105,15 @@ window.onload = function() {
 
 // Calculate global statistics
   var calcStats = function(local_key, distance) {
+    // Clean stats layer
+    //xLayer.setVisible(false);
+    xLayer.setMap(null);
+
+    var xSource = new ol.source.Vector({});
+    // 
+    //xSource = new ol.source.Vector({});
+    // xLayer.setSource(xSource);
+
     var localidad = towns[local_key].name;
     var features = getTownFeatures(localidad);
     var N = features.length;
@@ -251,6 +265,9 @@ window.onload = function() {
       Sx += x[i];
       Sx2 += x[i]*x[i];
     }
+    var highs = 0;
+    var lows = 0;
+
     for (var i = 0; i < N; i++) {
       var Swx = 0;
       var Wi = 0;
@@ -268,20 +285,67 @@ window.onload = function() {
       var ZGi = (Gi - EGi) / Math.sqrt(VarGi);
       var p_Gi = 1 - GetZPercent(ZGi);
 
+      if (p_Gi < ALPHA) {
+        highs++;
+        var feature = features[i].clone();
+        feature.setStyle(circle_red);
+        xSource.addFeature(feature);       
+        console.log(feature.get('Cve_Casa') + ': ' + p_Gi);
+      } else if (p_Gi > 1-ALPHA) {
+        lows++;
+      }
+
+      //console.log(features[i].get('Cve_Casa') + ': ' + p_Gi);
+
       Gi[i] = Gi;
       p_Gi[i] = p_Gi;
 
-      console.log(i);
-      console.log(Gi);
-      console.log(EGi);
-      console.log(VarGi);
-      console.log(ZGi);
-      console.log(p_Gi);
+      // var iSource = new ol.source.Vector({});
+
+      // var iStyle = new ol.style.Style({
+      //   image: new ol.style.Circle({
+      //     radius: distance / 10,
+      //     stroke: new ol.style.Stroke({
+      //       width: 0.7,
+      //       color: 'red'
+            
+      //     })//,
+      //     //  fill: new ol.style.Fill({
+      //     //    color: 'hsl(220,60%,60%)'
+      //     // })
+      //   })
+      // });
+
+      // iSource.addFeature(features[i]);
+      // xLayer.setSource(iSource);
+      // xLayer.setStyle(iStyle);
+      // xLayer.setVisible(true);
+      // xLayer.setMap(map);
+
+      // console.log(i);
+      // console.log(Gi);
+      // console.log(EGi);
+      // console.log(VarGi);
+      // console.log(ZGi);
+      // console.log(p_Gi);
     }
+
+    xLayer.setSource(xSource);
+    //xLayer.setStyle(circle_red);
+    xLayer.setVisible(true);
+    xLayer.setMap(map);
+    //map.addLayer(xLayer);
+    //   source: xSource,
+    //   style: circle_red,
+    //   visible: true
+    // });
+    // map.addLayer(xLayer);
+    //console.log("LARGOS " + larges);
+    //console.log("CORTOS " + shorts);
 
     return { I: I, E_I: E_I, Var_I: Var_I, Z_I: Z_I, p_I: p_I,
              G: G, E_G: E_G, Var_G: Var_G, Z_G: Z_G, p_G: p_G,
-             Gi: Gi };
+             Gi: Gi, highs: highs, lows: lows };
   };
 
 // Get features from town
@@ -423,6 +487,21 @@ window.onload = function() {
     })
   });
 
+  var circle_red = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 20,
+      stroke: new ol.style.Stroke({
+        width: 0.7,
+        color: 'red'
+        
+      })//,
+      //  fill: new ol.style.Fill({
+      //    color: 'hsl(220,60%,60%)'
+      // })
+    })
+  });
+
+
   var styles = [infected_style,
                 non_infected_style,
                 circle_style];
@@ -492,20 +571,24 @@ window.onload = function() {
     data_layers.push(layer);
   }
 
-/*  var sourceTowns = new ol.source.Vector({
-                    url: path + 'polygonTowns.geojson',
-                    format: new ol.format.GeoJSON({
-                                  defaultDataProjection: 'EPSG: 3857'
-                                })
-              });
+  var xLayer = new ol.layer.Vector({});
+  var xSource;
 
-  var layerTowns = new ol.layer.Vector({
-                  source: sourceTowns,
-                  visible: true
-  })
+////////////////////////////////////////
+  // var sourceTowns = new ol.source.Vector({
+  //                   url: path + 'polygonTowns.geojson',
+  //                   format: new ol.format.GeoJSON({
+  //                                 defaultDataProjection: 'EPSG: 3857'
+  //                               })
+  //             });
 
-  data_layers.push(layerTowns);*/
+  // var layerTowns = new ol.layer.Vector({
+  //                 source: sourceTowns,
+  //                 visible: true
+  // })
 
+  // data_layers.push(layerTowns);
+////////////////////////////////////////////
   //draw the map
   var map = new ol.Map({
     target: 'map',
@@ -554,8 +637,9 @@ window.onload = function() {
     if (feature) {
       popup.setPosition(evt.coordinate);
 
-      var content = '<strong>' + feature.get('Cve_Casa') + '</strong>';
-      content += ' ' + feature.get('Fecha') + '<br>';
+      var content = '<strong>' + feature.get('Cve_Casa') + '</strong><br>';
+      content += feature.get('HARP') + '<br>';
+      content += feature.get('Fecha') + '<br>';
       content += 'GPS: ' + feature.get('Punto_GPS');
 
       $(element).attr('data-placement', 'top');
@@ -569,6 +653,7 @@ window.onload = function() {
       coord = ol.proj.transform(coord, 'EPSG:3857', 'EPSG:4326');
 
       var data = '<strong>ID: </strong>' + feature.get('Cve_Casa') + '<br>';
+      data += '<strong>HARP: </strong>' + feature.get('HARP') + '<br>';
       data += '<strong>Fecha: </strong>' + feature.get('Fecha') + '<br>';
       data += '<strong>Localidad: </strong>' + feature.get('Localidad') + '<br>';
       data += '<strong>Punto GPS: </strong>' + feature.get('Punto_GPS') + '<br>';
@@ -625,6 +710,7 @@ window.onload = function() {
 
     var data = '<strong>I: </strong>' + myRound(S.I, 4) + ', <strong>p: </strong>' + myRound(S.p_I, 4) + '<br>';
     data += '<strong>G: </strong>' + myRound(S.G, 4) + ', <strong>p: </strong>' + myRound(S.p_G, 4) + '<br>';
+    data += '<strong>Puntos Gi (p<=' + ALPHA + '): </strong>' + S.highs + '<br>';
 
     $('#stats').html(data);
   });
