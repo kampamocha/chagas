@@ -37,10 +37,6 @@ window.onload = function() {
       })
     });
 
-// BORRAME
-// var opossumRedStyle = new ol.style.Style({ image: '' });
-// var opossumGreenStyle = new ol.style.Style({ image: '' });
-
     for (var i = 0, featuresNumber = features.length; i < featuresNumber; i++) {
       var feature = features[i];
 
@@ -154,6 +150,7 @@ window.onload = function() {
     var numG = 0;
     var denI = 0;
     var denG = 0;
+
     for (i = 0; i < N; i++) {
       denI += (x[i] - m) * (x[i] - m);
       for (j = 0; j < N; j++) {
@@ -256,9 +253,15 @@ window.onload = function() {
     var p_I = 1 - GetZPercent(Z_I);
     var p_G = 1 - GetZPercent(Z_G);
 
-    // Local Statistics
+    // LOCAL STATISTICS
     var Gi = [];
     var p_Gi = [];
+    // Adjust W (only for Gi*)
+    for (var i = 0; i < N; i++) {
+      w[i][i] = 1;
+      W += w[i][i];
+    }
+    // sums
     var Sx = 0;
     var Sx2 = 0;
     for (var i = 0; i < N; i++) {
@@ -272,20 +275,32 @@ window.onload = function() {
       var Swx = 0;
       var Wi = 0;
       for (var j = 0; j < N; j++) {
-        if (i != j) {
-          Swx += w[i][j] * x[j];
-          Wi += w[i][j];
-        }
+        // Gi
+        // if (i != j) {
+        //   Swx += w[i][j] * x[j];
+        //   Wi += w[i][j];
+        // }
+        // Gi*
+        Swx += w[i][j] * x[j];
+        Wi += w[i][j];        
       }
-      var Gi = Swx / (Sx - x[i]);
-      var EGi = Wi / (N-1);
-      var Yi1 = (Sx - x[i]) / (N-1);
-      var Yi2 = (Sx2 - x[i]*x[i]) / (N-1) - Yi1*Yi1;
-      var VarGi = (Wi * (N-1-Wi) * Yi2) / ((N-1) * (N-1) * (N-2) * Yi1 * Yi1);
+      // Gi
+      // var Gi = Swx / (Sx - x[i]);
+      // var EGi = Wi / (N-1);
+      // var Yi1 = (Sx - x[i]) / (N-1);
+      // var Yi2 = (Sx2 - x[i]*x[i]) / (N-1) - Yi1*Yi1;
+      // var VarGi = (Wi * (N-1-Wi) * Yi2) / ((N-1) * (N-1) * (N-2) * Yi1 * Yi1);
+      // Gi*
+      var Gi = Swx / Sx;
+      var EGi = Wi / N;
+      var Yi1 = Sx / N;
+      var Yi2 = Sx2 / N - Yi1*Yi1;
+      var VarGi = (Wi * (N-Wi) * Yi2) / (N * N * (N-1) * Yi1 * Yi1);
+      // common
       var ZGi = (Gi - EGi) / Math.sqrt(VarGi);
       var p_Gi = 1 - GetZPercent(ZGi);
 
-      if (p_Gi < ALPHA) {
+      if (p_Gi < ALPHA && x[i] > 0) {
         highs++;
         var feature = features[i].clone();
         feature.setStyle(circle_red);
@@ -710,7 +725,7 @@ window.onload = function() {
 
     var data = '<strong>I: </strong>' + myRound(S.I, 4) + ', <strong>p: </strong>' + myRound(S.p_I, 4) + '<br>';
     data += '<strong>G: </strong>' + myRound(S.G, 4) + ', <strong>p: </strong>' + myRound(S.p_G, 4) + '<br>';
-    data += '<strong>Puntos Gi (p<=' + ALPHA + '): </strong>' + S.highs + '<br>';
+    data += '<strong>Puntos Gi* (p<=' + ALPHA + '): </strong>' + S.highs + '<br>';
 
     $('#stats').html(data);
   });
